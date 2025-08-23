@@ -1,0 +1,19 @@
+
+---
+
+
+
+```txt
+python-dateutil>=2.8
+numpy>=1.26
+pandas>=2.1
+pandas-ta>=0.3.14b
+matplotlib>=3.8
+scikit-learn>=1.4
+scipy>=1.11
+yfinance>=0.2.40
+streamlit>=1.34
+tensorflow>=2.16.1      # works with .keras checkpoints
+keras-tuner>=1.4.7
+packaging>=24.0
+```
