@@ -3,7 +3,7 @@
 
 Project Title:
 
-Against the Complexity-Performance Paradigm: A Systematic Comparison of Neural Network Stock Price Predictions with MDA-Driven Feature Selection
+Against the Complexity-Performance Paradigm: A Systematic Comparison of Neural Network Stock Price Predictions with MDA-Driven Feature Selection.
 
 # Against the Complexity–Performance Paradigm: A Systematic Comparison of Neural Network Stock Price Predictions with MDA-Driven Feature Selection
 
@@ -47,3 +47,9 @@ python Code/scripts/download_data.py --ticker AAPL --start 2015-01-01 --end 2025
 
 # 4) Launch Streamlit app
 streamlit run app.py
+
+
+MIT License
+Copyright (c) 2025 Abdul Rashid Omeni
+Permission is hereby granted, free of charge, to any person obtaining a copy
+...
