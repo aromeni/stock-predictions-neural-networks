@@ -1,0 +1,92 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2cbbffee-f833-4aa7-a106-033318dacf94",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# --------------------------------------------------------\n",
+    "#  Streamlit GUI Layout\n",
+    "# ---------------------------------------------------------\n",
+    "import streamlit as st\n",
+    "from datetime import datetime\n",
+    "import pandas as pd\n",
+    "\n",
+    "# Set up page\n",
+    "st.set_page_config(page_title=\"Stock Price LSTM Prediction Dashboard\", layout=\"wide\")\n",
+    "st.sidebar.title(\"LSTM Stock Prediction\")\n",
+    "\n",
+    "# Sidebar Inputs\n",
+    "ticker = st.sidebar.text_input(\"Enter Stock Ticker\", value=\"AAPL\")\n",
+    "start_date = st.sidebar.date_input(\"Start Date\", value=datetime(2015, 1, 1))\n",
+    "end_date = st.sidebar.date_input(\"End Date\", value=datetime(2025, 5, 30))\n",
+    "\n",
+    "approach = st.sidebar.selectbox(\n",
+    "    \"Select Prediction Approach\",\n",
+    "    [\n",
+    "        \"Approach 1: Simple Close Price LSTM\",\n",
+    "        \"Approach 2: Close + Indicators + Sentiment\",\n",
+    "        \"Approach 3: MDA + Pruned LSTM\",\n",
+    "        \"Approach 4: MDA + Pruned LSTM + Attention\"\n",
+    "    ]\n",
+    ")\n",
+    "\n",
+    "horizon = st.sidebar.number_input(\"Prediction Horizon (Days Ahead)\", min_value=1, max_value=30, value=1)\n",
+    "run_forecast = st.sidebar.button(\"Run Forecast\")\n",
+    "\n",
+    "# Main Title\n",
+    "st.title(\"Stock Price Prediction using LSTM\")\n",
+    "\n",
+    "# Handler\n",
+    "if run_forecast:\n",
+    "    st.subheader(f\"{approach} Running...\")\n",
+    "\n",
+    "    if approach == \"Approach 1: Simple Close Price LSTM\":\n",
+    "        with st.spinner(\"Running Approach 1...\"):\n",
+    "            from approaches.approach_1 import run_simple_close_lstm\n",
+    "            run_simple_close_lstm(ticker, start_date, end_date, horizon)\n",
+    "\n",
+    "    elif approach == \"Approach 2: Close + Indicators + Sentiment\":\n",
+    "        with st.spinner(\"Running Approach 2...\"):\n",
+    "            from approaches.approach_2 import run_close_indicators_sentiment_lstm\n",
+    "            run_close_indicators_sentiment_lstm(ticker, start_date, end_date, horizon)\n",
+    "\n",
+    "    elif approach == \"Approach 3: MDA + Pruned LSTM\":\n",
+    "        with st.spinner(\"Running Approach 3...\"):\n",
+    "            from approaches.approach_3 import run_lstm_with_mda_pruning\n",
+    "            run_lstm_with_mda_pruning(ticker, start_date, end_date, horizon)\n",
+    "\n",
+    "    elif approach == \"Approach 4: MDA + Pruned LSTM + Attention\":\n",
+    "        with st.spinner(\"Running Approach 4...\"):\n",
+    "            st.warning(\"### Approach 4 is under development and may take longer to run.\")\n",
+    "            # from approaches.approach_4 import run_mda_attention_lstm\n",
+    "            # run_mda_attention_lstm(ticker, start_date, end_date, horizon)\n",
+    "\n",
+    "    st.success(\"✅ Forecast complete.\")\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.7"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
