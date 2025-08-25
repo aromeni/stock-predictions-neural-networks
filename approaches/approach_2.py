@@ -584,56 +584,56 @@ def run_close_indicators_sentiment_lstm(ticker="AAPL", start_date="2015-01-01", 
         mime='text/csv'
     )
 
-    # ==========================================
-    # STEP 12: PERMUTATION IMPORTANCE ANALYSIS
-    # ==========================================
-    st.write("###  Permutation Importance on Test Set")
+    # # ==========================================
+    # # STEP 12: PERMUTATION IMPORTANCE ANALYSIS
+    # # ==========================================
+    # st.write("###  Permutation Importance on Test Set")
 
-    with st.spinner("Computing permutation importance on test sequences..."):
-        FEATURES = train_df.columns.tolist()
-        perm_importance = permutation_importance_seq(
-            model=model,
-            X=X_test,               # 3D: (samples, window, features)
-            y=y_test,               # 1D: true Close prices
-            feature_names=FEATURES,
-            n_repeats=5,
-            random_state=42
-        )
+    # with st.spinner("Computing permutation importance on test sequences..."):
+    #     FEATURES = train_df.columns.tolist()
+    #     perm_importance = permutation_importance_seq(
+    #         model=model,
+    #         X=X_test,               # 3D: (samples, window, features)
+    #         y=y_test,               # 1D: true Close prices
+    #         feature_names=FEATURES,
+    #         n_repeats=5,
+    #         random_state=42
+    #     )
 
-    # Convert to Series and sort
-    perm_series = pd.Series(perm_importance).sort_values(ascending=False)
+    # # Convert to Series and sort
+    # perm_series = pd.Series(perm_importance).sort_values(ascending=False)
 
-    st.success("Permutation importance computed.")
-    st.write("###  Top 10 Feature Importances (Test Set)")
-    st.dataframe(perm_series.head(10))
+    # st.success("Permutation importance computed.")
+    # st.write("###  Top 10 Feature Importances (Test Set)")
+    # st.dataframe(perm_series.head(10))
 
-    # Plot importance
-    st.write("###  Permutation Importance (Before Pruning)")
-    plot_permutation_importance_barh(
-        perm_importance,
-        title="Permutation Importance on Test Data (All Features)"
-    )
+    # # Plot importance
+    # st.write("###  Permutation Importance (Before Pruning)")
+    # plot_permutation_importance_barh(
+    #     perm_importance,
+    #     title="Permutation Importance on Test Data (All Features)"
+    # )
     
-    # Educational note
-    st.info("""
-    **Why Test Set for Permutation Importance?**
+    # # Educational note
+    # st.info("""
+    # **Why Test Set for Permutation Importance?**
     
-    Permutation importance measures how much worse the model performs when 
-    a feature's information is destroyed. Using the test set provides:
+    # Permutation importance measures how much worse the model performs when 
+    # a feature's information is destroyed. Using the test set provides:
     
-    1. **Honest Assessment** - Unbiased feature importance
-    2. **Generalization** - How features matter for unseen data  
-    3. **Real-World Relevance** - Performance on new predictions
-    """)
+    # 1. **Honest Assessment** - Unbiased feature importance
+    # 2. **Generalization** - How features matter for unseen data  
+    # 3. **Real-World Relevance** - Performance on new predictions
+    # """)
 
-    # Feature analysis
-    positive_features = [f for f, imp in perm_importance.items() if imp > 0]
-    negative_features = [f for f, imp in perm_importance.items() if imp <= 0]
+    # # Feature analysis
+    # positive_features = [f for f, imp in perm_importance.items() if imp > 0]
+    # negative_features = [f for f, imp in perm_importance.items() if imp <= 0]
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(" Useful Features", f"{len(positive_features)}/{len(perm_importance)}")
-    with col2:
-        st.metric(" Noisy Features", f"{len(negative_features)}/{len(perm_importance)}")
+    # col1, col2 = st.columns(2)
+    # with col1:
+    #     st.metric(" Useful Features", f"{len(positive_features)}/{len(perm_importance)}")
+    # with col2:
+    #     st.metric(" Noisy Features", f"{len(negative_features)}/{len(perm_importance)}")
 
    
