@@ -52,27 +52,9 @@ from utils import (
     make_sequences,
     create_training_features,
     train_test_split_timeseries,
-
-    get_optimal_pruning_config,
-    intelligent_feature_selection,
-    should_use_pruned_model,
-    run_intelligent_pruning_pipeline,
-    create_comprehensive_comparison_dashboard,
     enhanced_pruning_with_comprehensive_visualization,
-    # prune_retrain_model,
-    permutation_importance_seq,
 )
 
-
-
-
-
-
-
-from models import (
-     build_transformer_model,
-    # build_simplified_transformer
-)
 
 ###############################################################
 
@@ -318,6 +300,85 @@ def prune_transformer_architecture_aware(
 #     return model
 
 
+def build_transformer_model(input_shape, d_model=64, num_heads=4, num_layers=2):
+    """
+    Properly designed Transformer for financial time series with:
+    - Causal masking for temporal dependencies  
+    - Sinusoidal positional encoding
+    - Financial-specific adaptations
+    """
+    inputs = layers.Input(shape=input_shape)
+    seq_len, n_features = input_shape
+    
+    # Sinusoidal positional encoding (better for time series than learned)
+    def get_positional_encoding(seq_len, d_model):
+        pos = tf.range(seq_len, dtype=tf.float32)[:, tf.newaxis]
+        i = tf.range(d_model, dtype=tf.float32)[tf.newaxis, :]
+        
+        angle_rates = 1 / tf.pow(10000.0, (2 * (i // 2)) / tf.cast(d_model, tf.float32))
+        angle_rads = pos * angle_rates
+        
+        # Apply sin to even indices, cos to odd indices
+        sines = tf.sin(angle_rads[:, 0::2])
+        cosines = tf.cos(angle_rads[:, 1::2])
+        
+        pos_encoding = tf.concat([sines, cosines], axis=-1)
+        return pos_encoding[tf.newaxis, ...]
+    
+    # Feature projection
+    x = layers.Dense(d_model, name='feature_projection')(inputs)
+    
+    # Add positional encoding
+    pos_encoding = get_positional_encoding(seq_len, d_model)
+    x = x + pos_encoding
+    
+    # Causal mask for temporal dependencies
+    def create_causal_mask(seq_len):
+        mask = tf.linalg.band_part(tf.ones((seq_len, seq_len)), -1, 0)
+        return mask[tf.newaxis, tf.newaxis, :, :]
+    
+    causal_mask = create_causal_mask(seq_len)
+    
+    # Transformer blocks with proper causal attention
+    for i in range(num_layers):
+        # Multi-head causal attention
+        attn_output = layers.MultiHeadAttention(
+            num_heads=num_heads,
+            key_dim=d_model // num_heads,
+            dropout=0.1,
+            name=f'mha_{i}'
+        )(x, x, attention_mask=causal_mask)
+        
+        # Add & Norm 1
+        x = layers.LayerNormalization(epsilon=1e-6, name=f'ln1_{i}')(x + attn_output)
+        
+        # Feed Forward Network
+        ffn = layers.Dense(d_model * 4, activation="gelu", name=f'ffn1_{i}')(x)
+        ffn = layers.Dropout(0.1)(ffn)
+        ffn = layers.Dense(d_model, name=f'ffn2_{i}')(ffn)
+        
+        # Add & Norm 2
+        x = layers.LayerNormalization(epsilon=1e-6, name=f'ln2_{i}')(x + ffn)
+    
+    # Temporal pooling - use last timestep (causal)
+    x = x[:, -1, :]  # Take last timestep only
+    
+    # Regression head
+    x = layers.Dense(32, activation="relu", name='regression_head')(x)
+    x = layers.Dropout(0.1)(x)
+    outputs = layers.Dense(1, name='output')(x)
+    
+    model = models.Model(inputs, outputs, name='financial_transformer')
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
+        loss="mse",
+        metrics=["mae"]
+    )
+    
+    return model
+
+
+
 #------------------------------------------------------------
 #  Display Model Summary in Streamlit
 #------------------------------------------------------------
@@ -499,7 +560,7 @@ def run_transformer_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end
 
     fig, ax = plt.subplots(figsize=(6, 4))
     history_df['loss'].plot(ax=ax, label='Training Loss')
-    # history_df['val_loss'].plot(ax=ax, label='Validation Loss')
+    history_df['val_loss'].plot(ax=ax, label='Validation Loss')
     ax.set_title('Training and Validation Loss')
     ax.set_xlabel('Epoch')
     ax.set_ylabel('MSE Loss')

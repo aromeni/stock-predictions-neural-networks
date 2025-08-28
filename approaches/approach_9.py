@@ -299,9 +299,9 @@ def run_simple_lstm_transformer_with_mda_pruning(ticker="AAPL", start_date="2015
     - y_val: {y_val.shape} (samples,)
     """)
     
-    # =========================================================================
+    # ===================================
     # STEP 6: LSTM-Transformer MODEL
-    # =========================================================================
+    # =======================================
     st.header(" LSTM-Transformer Model Architecture")
     
     input_shape = (X_train.shape[1], X_train.shape[2])
@@ -324,11 +324,11 @@ def run_simple_lstm_transformer_with_mda_pruning(ticker="AAPL", start_date="2015
     # )
 
 
-    # Enhanced callbacks
+    #  callbacks.....enhanced for better training control
     callbacks_list = [
     tf.keras.callbacks.EarlyStopping(patience=15, restore_best_weights=True),
     tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=15),
-    tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True)
+    tf.keras.callbacks.ModelCheckpoint('best_model.keras', save_best_only=True)
 ]
 
 
@@ -345,9 +345,9 @@ def run_simple_lstm_transformer_with_mda_pruning(ticker="AAPL", start_date="2015
     
     st.success("Model training completed.")
 
-    # =========================================================================
+    # =========================================
     # STEP 8: TRAINING HISTORY VISUALIZATION
-    # =========================================================================
+    # =========================================
     st.header(" Training History")
     
     history_df = pd.DataFrame(history.history)
@@ -379,7 +379,7 @@ def run_simple_lstm_transformer_with_mda_pruning(ticker="AAPL", start_date="2015
             LOOK_BACK=60
         )
 
-    st.success(f"✅ Predictions completed! Generated {len(y_pred)} predictions.")
+    st.success(f"Predictions completed! Generated {len(y_pred)} predictions.")
     
     # Display first 10 predictions
     results_df = pd.DataFrame({
@@ -412,9 +412,6 @@ def run_simple_lstm_transformer_with_mda_pruning(ticker="AAPL", start_date="2015
         # If it's already a DataFrame, use it as-is
         metrics_df = metrics_result
     
-
-
-    # st.dataframe(metrics_df)  # COMMENTED THIS LINE ---might
     
     # Download metrics
     csv_metrics = metrics_df.to_csv(index=False).encode('utf-8')

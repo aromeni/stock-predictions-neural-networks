@@ -1,5 +1,5 @@
 
-# approach_2.py main function with correct indentation
+# approach_2.py 
 
 # ============================
 #  Imports & Configuration
@@ -221,10 +221,6 @@ def evaluate_model(y_true, y_pred):
 
 
 #------------------------------------------------------------
-#  Main Function
-#------------------------------------------------------------
-
-#------------------------------------------------------------
 #  Permutation Importance for Sequence Inputs
 #------------------------------------------------------------
 
@@ -258,7 +254,7 @@ def permutation_importance_seq(model, X, y, feature_names, n_repeats=5, random_s
         mse_diffs = []
 
         for _ in range(n_repeats):
-            X_p = X.copy()                                   # fresh copy each repeat
+            X_p = X.copy()                                  # copy to permute
 
             # Flatten the (samples, timesteps) slice, shuffle, reshape back
             slice_flat = X_p[:, :, idx].ravel()
@@ -283,11 +279,6 @@ def permutation_importance_seq(model, X, y, feature_names, n_repeats=5, random_s
 #---------------------------------------------------------
 #  Prune and Retrain LSTM with MDA Feature Importance
 # ---------------------------------------------------------
-
-import numpy as np
-import tensorflow as tf
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.utils import check_random_state
 
 def prune_retrain_lstm(
     model_builder,           # callable → compiled model
@@ -584,56 +575,4 @@ def run_close_indicators_sentiment_lstm(ticker="AAPL", start_date="2015-01-01", 
         mime='text/csv'
     )
 
-    # # ==========================================
-    # # STEP 12: PERMUTATION IMPORTANCE ANALYSIS
-    # # ==========================================
-    # st.write("###  Permutation Importance on Test Set")
-
-    # with st.spinner("Computing permutation importance on test sequences..."):
-    #     FEATURES = train_df.columns.tolist()
-    #     perm_importance = permutation_importance_seq(
-    #         model=model,
-    #         X=X_test,               # 3D: (samples, window, features)
-    #         y=y_test,               # 1D: true Close prices
-    #         feature_names=FEATURES,
-    #         n_repeats=5,
-    #         random_state=42
-    #     )
-
-    # # Convert to Series and sort
-    # perm_series = pd.Series(perm_importance).sort_values(ascending=False)
-
-    # st.success("Permutation importance computed.")
-    # st.write("###  Top 10 Feature Importances (Test Set)")
-    # st.dataframe(perm_series.head(10))
-
-    # # Plot importance
-    # st.write("###  Permutation Importance (Before Pruning)")
-    # plot_permutation_importance_barh(
-    #     perm_importance,
-    #     title="Permutation Importance on Test Data (All Features)"
-    # )
-    
-    # # Educational note
-    # st.info("""
-    # **Why Test Set for Permutation Importance?**
-    
-    # Permutation importance measures how much worse the model performs when 
-    # a feature's information is destroyed. Using the test set provides:
-    
-    # 1. **Honest Assessment** - Unbiased feature importance
-    # 2. **Generalization** - How features matter for unseen data  
-    # 3. **Real-World Relevance** - Performance on new predictions
-    # """)
-
-    # # Feature analysis
-    # positive_features = [f for f, imp in perm_importance.items() if imp > 0]
-    # negative_features = [f for f, imp in perm_importance.items() if imp <= 0]
-    
-    # col1, col2 = st.columns(2)
-    # with col1:
-    #     st.metric(" Useful Features", f"{len(positive_features)}/{len(perm_importance)}")
-    # with col2:
-    #     st.metric(" Noisy Features", f"{len(negative_features)}/{len(perm_importance)}")
-
-   
+    # ============================================================

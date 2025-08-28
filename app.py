@@ -25,8 +25,7 @@ approach = st.sidebar.selectbox(
         "Approach 6: MDA + Pruned Transformer",
         "Approach 7: MDA + Pruned CNN-LSTM",
         "Approach 8: MDA + Pruned TCN-LSTM",
-        "Approach 9: MDA + Pruned LSTM-Transformer",
-        "Approach 10: MDA + Pruned Transformer with Intelligent Feature Pruning"
+        "Approach 9: MDA + Pruned LSTM-Transformer"
     ]
 )
 
@@ -78,11 +77,5 @@ if run_forecast:
         with st.spinner("Running Approach 9..."):
             from approaches.approach_9 import  run_simple_lstm_transformer_with_mda_pruning
             run_simple_lstm_transformer_with_mda_pruning(ticker, start_date, end_date,horizon)
-    elif approach == "Approach 10: MDA + Pruned Transformer with Intelligent Feature Pruning":
-        with st.spinner("Running Approach 10..."):
-            from approaches.approach_10 import run_transformer_mda_with_intelligent_feature_pruning
-            run_transformer_mda_with_intelligent_feature_pruning(ticker, start_date, end_date, horizon)
-    
-
     st.success("Model Training and Forecast complete.")
 

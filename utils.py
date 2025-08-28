@@ -859,8 +859,8 @@ def make_predictions(model, scaler, train_df, test_df, FEATURES, LOOK_BACK=60, C
 
 def evaluate_model(y_true, y_pred):
     """
-    FIXED VERSION: Computes and displays key evaluation metrics with consistent ordering.
-    Returns a DataFrame with metric names and values.
+    - Computes and displays key evaluation metrics with consistent ordering.
+    - Returns a DataFrame with metric names and values.
     """
     
     mse = mean_squared_error(y_true, y_pred)
@@ -1055,112 +1055,6 @@ def prune_retrain_model(
     metrics = {"RMSE": rmse, "MAE": mae, "R²": r2, "MAPE": mape}
     
     return importances, final_features, history, metrics, pruned_model
-
-
-
-
-
-#------------------------------------------------------------
-#  Make Predictions After Retraining
-
-# def make_predictions_after_retraining(
-#     model,
-#     scaler,
-#     train_df: pd.DataFrame,
-#     test_df: pd.DataFrame,
-#     FEATURES,
-#     LOOK_BACK: int = 60,
-#     CTX_FRAC_TRAIN: float = 0.20,
-#     *,
-#     original_target_scaler=None,   # MinMaxScaler used for y during (re)training
-#     target_is_scaled: bool = True  # True if the model predicts scaled y
-# ):
-#     """Robust inference with scaler reconciliation + proper inverse-scaling."""
-
-#     # --- 0) Normalize input and basic checks
-#     if not isinstance(FEATURES, tuple):
-#         FEATURES = tuple(FEATURES)
-#     if "Close" not in FEATURES:
-#         raise ValueError("Target feature 'Close' missing in FEATURES.")
-#     CLOSE_IDX = FEATURES.index("Close")
-
-#     # --- 1) Build context + test window
-#     ctx_len = max(1, int(len(train_df) * CTX_FRAC_TRAIN))
-#     context = train_df.tail(ctx_len)
-#     full_test = pd.concat([context, test_df], axis=0).sort_index()
-
-#     # --- 2) Extract features to numpy (strict order)
-#     X_full = full_test[list(FEATURES)].to_numpy(dtype=np.float32)
-
-#     # --- 3) Scale features with reconciliation if #features mismatch
-#     def _transform_with_possible_subset(scaler_obj, X_np, feat_names):
-#         """Transform X_np using scaler_obj; if feature count mismatches, map to subset or refit."""
-#         n_in = X_np.shape[1]
-#         if hasattr(scaler_obj, "n_features_in_") and scaler_obj.n_features_in_ != n_in:
-#             # Try subset mapping from a superset scaler
-#             if hasattr(scaler_obj, "feature_names_in_"):
-#                 parent_names = list(scaler_obj.feature_names_in_)
-#                 try:
-#                     idx = [parent_names.index(f) for f in feat_names]  # map order
-#                     # MinMaxScaler transform: X_scaled = X * scale_ + min_
-#                     scale = scaler_obj.scale_[idx]
-#                     bias  = scaler_obj.min_[idx]
-#                     return X_np * scale + bias
-#                 except ValueError:
-#                     # Some requested features not in the parent scaler -> refit
-#                     pass
-#             # Refit a fresh scaler on TRAIN ONLY (safer fallback)
-#             st.warning(
-#                 f"Scaler feature mismatch: scaler expects {getattr(scaler_obj,'n_features_in_', 'N/A')} "
-#                 f"but got {n_in}. Re-fitting a new MinMaxScaler on training subset."
-#             )
-#             new_scaler = MinMaxScaler().fit(train_df[list(feat_names)].to_numpy(dtype=np.float32))
-#             # Replace outer reference so caller keeps consistent scaler if needed
-#             return new_scaler.transform(X_np)
-#         else:
-#             return scaler_obj.transform(X_np)
-
-#     scaled_full = _transform_with_possible_subset(scaler, X_full, FEATURES)
-
-#     # --- 4) Build sequences for prediction
-#     if len(scaled_full) <= LOOK_BACK:
-#         raise ValueError(f"Not enough rows ({len(scaled_full)}) to build sequences with LOOK_BACK={LOOK_BACK}.")
-#     X_pred = np.stack([scaled_full[i - LOOK_BACK:i] for i in range(LOOK_BACK, len(scaled_full))])
-
-#     # --- 5) Ground truth in original units
-#     y_true = full_test["Close"].to_numpy()[LOOK_BACK:]
-
-#     # --- 6) Model predictions (in scaled space if target_is_scaled=True)
-#     y_hat = model.predict(X_pred, verbose=0).ravel()
-
-#     # --- 7) Inverse-scale predictions to dollars
-#     if target_is_scaled:
-#         if original_target_scaler is not None:
-#             # Preferred path: the exact scaler used for y during training
-#             y_pred = original_target_scaler.inverse_transform(y_hat.reshape(-1, 1)).ravel()
-#         else:
-#             # Fallback: embed y_hat into the Close column and inverse-transform with feature scaler
-#             dummy = scaled_full[LOOK_BACK:].copy()
-#             if dummy.shape[1] != len(FEATURES):
-#                 raise ValueError("Internal error: dummy feature width mismatch during inverse scaling.")
-#             dummy[:, CLOSE_IDX] = y_hat
-#             y_pred = scaler.inverse_transform(dummy)[:, CLOSE_IDX]
-#     else:
-#         y_pred = y_hat  # already in dollars
-
-#     # --- 8) Sanity check for scaling mismatch
-#     try:
-#         rel_gap = np.abs(np.mean(y_pred) - np.mean(y_true)) / max(1e-9, np.mean(y_true))
-#         if rel_gap > 5.0:  # 500% gap – strong signal something's off
-#             st.error(
-#                 f"Scaling mismatch detected: mean(pred)={np.mean(y_pred):.2f} vs mean(true)={np.mean(y_true):.2f}"
-#             )
-#     except Exception:
-#         pass
-
-#     aligned_dates = full_test.index[LOOK_BACK:]
-#     return y_true, y_pred, aligned_dates, full_test
-
 
 
  #-------------------------------------------------------------------------------
@@ -1484,22 +1378,23 @@ def run_intelligent_pruning_pipeline(
 
 
 
-# QUICK FIX: Add this to your utils.py to properly label and extract metrics
-
-def fix_metrics_dataframe(metrics_df):
+#------------------------------------------------------------
+#  Standardize Metrics Format
+#------------------------------------------------------------
+def fix_metrics_dataframe(metrics_df): 
     """
     Fix metrics DataFrame by adding proper labels and converting to dictionary.
     """
     if not isinstance(metrics_df, pd.DataFrame):
         return metrics_df
     
-    # Common metric names in order (adjust based on your evaluate_model function)
+    # Common metric names in order (adjust based on  evaluate_model function)
     metric_names = ['MSE', 'RMSE', 'MAE', 'R²', 'MAPE', 'Directional_Accuracy']
     
     # Create a copy and add proper index
     fixed_df = metrics_df.copy()
     
-    # If we have 6 metrics, use the standard names
+    # for the 6 metrics, use the standard names
     if len(fixed_df) == 6:
         fixed_df.index = metric_names[:len(fixed_df)]
     elif len(fixed_df) == 5:
@@ -1769,10 +1664,6 @@ def create_comprehensive_comparison_dashboard(
     # ==========================================================================
     #  DETAILED METRICS COMPARISON
     # ==========================================================================
-
-
-
-
 
     st.subheader(" Detailed Performance Metrics")
     
@@ -2169,7 +2060,7 @@ def plot_features_distribution(df, max_plots=20):
                 st.pyplot(fig)
                 plt.close(fig)
 
-# Usage example in your approach file:
+# Usage example in my approach file:
 # engineered_df = compute_features(df)
 # plot_features_distribution(engineered_df)
 
@@ -2328,7 +2219,7 @@ def create_feature_pruning_dashboard(
 ):
     """
     Streamlit dashboard for Intelligent Feature Pruning (Approach 10).
-    Mirrors the style of your previous 'Complete Model Evolution Dashboard'.
+    Mirrors the style of  previous 'Complete Model Evolution Dashboard'.
     """
 
     orig_m = _norm_keys(original_metrics)
@@ -2535,7 +2426,7 @@ def create_feature_pruning_dashboard(
 
 
 
-# Consider adding a utility function to normalize metrics format
+#  adding a utility function to normalize metrics format
 def normalize_metrics(metrics):
     if isinstance(metrics, dict):
         return metrics

@@ -51,14 +51,8 @@ from utils import (
     make_sequences,
     create_training_features,
     train_test_split_timeseries,
-    get_optimal_pruning_config,
-    intelligent_feature_selection,
-    should_use_pruned_model,
-    run_intelligent_pruning_pipeline,
-    create_comprehensive_comparison_dashboard,
     enhanced_pruning_with_comprehensive_visualization,
-    prune_retrain_model,
-    permutation_importance_seq,
+
 )
 
 
@@ -172,7 +166,7 @@ def prune_cnn_lstm_architecture_aware(
 
     pruned_model.compile(optimizer=tf.keras.optimizers.Adam(1e-3), loss='mse', metrics=['mae'])
 
-    # Metadata for your dashboard
+    # Metadata for dashboard
     pruned_model.pruning_importances = {
         "conv1_filters": pr_conv,
         "conv2_filters": pr_conv2,
@@ -380,7 +374,7 @@ def run_cnn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
             X_train, y_train,
             validation_data=(X_val, y_val),
             epochs=100,
-            batch_size=64,
+            batch_size=32,
             callbacks=callbacks_list,
             verbose=2,
         )
@@ -421,7 +415,7 @@ def run_cnn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
             LOOK_BACK=60
         )
 
-    st.success(f"✅ Predictions completed! Generated {len(y_pred)} predictions.")
+    st.success(f"Predictions completed! Generated {len(y_pred)} predictions.")
     
     # Display first 10 predictions
     results_df = pd.DataFrame({
@@ -443,7 +437,7 @@ def run_cnn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
     # metrics_df = evaluate_model(y_true, y_pred)
     metrics_result = evaluate_model(y_true, y_pred)
     
-    # FIXED: Convert dict to DataFrame for CSV download
+    #  Convert dict to DataFrame for CSV download
     if isinstance(metrics_result, dict):
         # Convert dictionary to DataFrame for display and download
         metrics_df = pd.DataFrame([
@@ -465,11 +459,11 @@ def run_cnn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
     )
     
 # =========================================================================
-    # STEP 10: INTELLIGENT PRUNING WITH COMPREHENSIVE VISUALIZATION (FIXED)
+    # STEP 10: INTELLIGENT PRUNING WITH COMPREHENSIVE VISUALIZATION 
     # =========================================================================
     st.header(" Intelligent Model Pruning & Analysis")
     
-    # FIXED: Proper metrics conversion
+    #  Proper metrics conversion
     try:
         if isinstance(metrics_df, pd.DataFrame):
             # Add proper metric names to the DataFrame

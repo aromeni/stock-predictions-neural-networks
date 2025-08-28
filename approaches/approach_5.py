@@ -279,7 +279,7 @@ def run_tcn_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_date="2
     # Enhanced callbacks
     callbacks_list = [
     tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
-    tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5),
+    tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=5, min_lr=1e-6),
     tf.keras.callbacks.ModelCheckpoint('best_model.keras', save_best_only=True)
 ]
 
@@ -329,7 +329,7 @@ def run_tcn_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_date="2
             LOOK_BACK=60
         )
 
-    st.success(f"✅ Predictions completed! Generated {len(y_pred)} predictions.")
+    st.success(f" Predictions completed! Generated {len(y_pred)} predictions.")
     
     # Display first 10 predictions
     results_df = pd.DataFrame({

@@ -83,33 +83,6 @@ def safe_copy_weights(src_layer, dst_layer):
         return  # never let transfer break the run
 
 
-def _scalar(x, typ, name):
-    """
-    Coerce lists/tuples/arrays/Series to a single scalar of type `typ`.
-    If a sequence is passed, take the first element.
-    """
-    if isinstance(x, (list, tuple, np.ndarray, pd.Series)):
-        if len(x) == 0:
-            raise ValueError(f"{name} is empty")
-        x = x[0]
-    try:
-        return typ(x)
-    except Exception as e:
-        raise TypeError(f"{name} must be {typ.__name__}, got {type(x)} with value {x}") from e
-
-def _tuple_of_ints(v, name):
-    """
-    Ensure `v` is a tuple of ints (for dilations). Accepts list/tuple/ndarray/Series/scalar.
-    For a scalar, returns a 1-tuple.
-    """
-    if isinstance(v, (np.ndarray, pd.Series)):
-        v = v.tolist()
-    if isinstance(v, (list, tuple)):
-        return tuple(int(int(x)) for x in v)
-    return (int(v),)
-
-
-
 
 #------------------------------------------------------------
 #  Build TCN→LSTM Model
@@ -143,6 +116,8 @@ def build_tcn_lstm_model(input_shape,
     model = models.Model(inp, out)
     model.compile(optimizer=tf.keras.optimizers.Adam(lr), loss="mse", metrics=["mae"])
     return model
+
+
 
 
 
@@ -269,18 +244,18 @@ def run_tcn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
     st.write("### Visualizing Price Trends")
     plot_close_price_history(df)
 
-    # =========================================================================
+    # =================================================
     # STEP 2: FEATURE ENGINEERING
-    # =========================================================================
+    # ==================================================
     with st.spinner("Computing technical features..."):
         df_features = compute_features(df)
 
     st.write("### Feature-Engineered Data Sample")
     st.dataframe(df_features.head(5))
 
-    # =========================================================================
+    # =======================================
     # STEP 3: SENTIMENT DATA INTEGRATION
-    # =========================================================================
+    # =======================================
     with st.spinner("Loading and processing sentiment data..."):
         daily_sent = prepare_daily_sentiment_features("data/synthetic_financial_tweets_labeled.AAPL.csv")
         if daily_sent is None:
@@ -298,9 +273,9 @@ def run_tcn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
     plot_features_distribution(full_df, max_plots=20)
 
 
-    # =========================================================================
+    # ================================
     # STEP 4: MDA FEATURE SELECTION
-    # =========================================================================
+    # =================================
     st.header(" MDA Feature Selection")
     
     results = complete_ml_pipeline(
@@ -340,9 +315,9 @@ def run_tcn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
     
     st.success(f"MDA Pipeline completed! Selected {len(selected_features)} features.")
     
-    # =========================================================================
+    # ========================================
     # STEP 5: PREPARE TCN→LSTM TRAINING DATA
-    # =========================================================================
+    # =========================================
     st.header(" Preparing TCN→LSTM Training Data")
     
     with st.spinner("Creating training features..."):
@@ -370,9 +345,9 @@ def run_tcn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
     - y_val: {y_val.shape} (samples,)
     """)
     
-    # =========================================================================
+    # ======================================
     # STEP 6: TCN→LSTM MODEL
-    # =========================================================================
+    # ========================================
     st.header(" TCN→LSTM Model Architecture")
     
     input_shape = (X_train.shape[1], X_train.shape[2])
@@ -384,7 +359,7 @@ def run_tcn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
             filters=128,  # Increased for wider model)
             kernel_size=7,
             stacks=3,
-            dilations=(1, 2, 4, 8, 16),
+            dilations=(1, 2, 4, 8),
             lstm_units=128,  # Increased for wider model
             dropout=0.1,  # Slightly higher dropout for stability
             l2_reg=1e-5  # Regularization to prevent overfitting
@@ -459,7 +434,7 @@ def run_tcn_lstm_with_mda_pruning(ticker="AAPL", start_date="2015-01-01", end_da
             LOOK_BACK=60
         )
 
-    st.success(f"✅ Predictions completed! Generated {len(y_pred)} predictions.")
+    st.success(f" Predictions completed! Generated {len(y_pred)} predictions.")
     
     # Display first 10 predictions
     results_df = pd.DataFrame({
