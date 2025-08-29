@@ -46,7 +46,7 @@ Through rigorous experimentation with identical datasets, preprocessing, and eva
 | 5th  | 5        | TCN                 | 94.22%  | 5.89     | 8 |
 | 6th  | 2        | Complex LSTM        | 92.65%  | 8.54     | 21 (unselected) |
 | 7th  | 7        | CNN–LSTM            | 87.35%  | 11.59    | 8 |
-| 8th  | 6        | Transformer         | 67.99%  | 18.44    | 8 |
+| 8th  | 6        | Transformer         | 83.25%  | 13.22    | 8 |
 | 9th  | 8        | TCN–LSTM            | 61.98%  | 20.10    | 8 |
 
 ---
